@@ -23,5 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # path(' ', index),
     # path('categories/', categories),
-    path('tbot/', include('tbot.urls')),
+    path('', include('tbot.urls')),
 ]
+
+handler404 = pageNotFound
