@@ -1,19 +1,37 @@
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.shortcuts import render, redirect, get_object_or_404
-
+from django.views.generic import ListView
 from .forms import *
 from .models import *
 
+menu = [{'title': "О сайте", 'url_name': 'about'},
+        {'title': "Добавить статью", 'url_name': 'add_page'},
+        {'title': "Обратная связь", 'url_name': 'contact'},
+        {'title': "Войти", 'url_name': 'login'}
+        ]
 
-def index(request):
-    posts = Women.objects.all().order_by('-time_update')
 
-    context = {
-        'posts': posts,
-        'title': 'Главная страница',
-        'cat_selected': 0
-    }
-    return render(request, 'women/index.html', context=context)
+class WomenHome(ListView):
+    model = Women
+    template_name = 'women/index.html'
+    context_object_name = 'posts'
+    extra_context = {'title': 'Главная страница'}
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['menu'] = menu
+        return context
+
+
+# def index(request):
+#     posts = Women.objects.all().order_by('-time_update')
+#
+#     context = {
+#         'posts': posts,
+#         'title': 'Главная страница',
+#         'cat_selected': 0
+#     }
+#     return render(request, 'women/index.html', context=context)
 
 
 def about(request):
