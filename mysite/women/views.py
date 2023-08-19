@@ -1,6 +1,7 @@
 from django.http import HttpResponse, HttpResponseNotFound, Http404
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView
+from django.urls import reverse_lazy
+from django.views.generic import ListView, DetailView, CreateView
 from .forms import *
 from .models import *
 
@@ -24,7 +25,7 @@ class WomenHome(ListView):
         return context
 
     def get_queryset(self):
-        return Women.objects.filter(is_published=True)
+        return Women.objects.filter(is_published=True).order_by('-time_update')
 
 
 # def index(request):
@@ -43,20 +44,32 @@ def about(request):
                   {'title': 'Главная страница'})
 
 
-def addpage(request):
-    if request.method == 'POST':
-        form = AddPostForm(request.POST, request.FILES)
-        if form.is_valid():
-            # print(form.cleaned_data)
-            form.save()
-            return redirect('home')
-    else:
-        form = AddPostForm()
-    context = {
-        'title': 'Добавление статьи',
-        'form': form
-    }
-    return render(request, 'women/addpage.html', context=context)
+class AddPage(CreateView):
+    form_class = AddPostForm
+    template_name = 'women/addpage.html'
+    success_url = reverse_lazy('home')
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Добавление статьи'
+        context['menu'] = menu
+        return context
+
+
+# def addpage(request):
+#     if request.method == 'POST':
+#         form = AddPostForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             # print(form.cleaned_data)
+#             form.save()
+#             return redirect('home')
+#     else:
+#         form = AddPostForm()
+#     context = {
+#         'title': 'Добавление статьи',
+#         'form': form
+#     }
+#     return render(request, 'women/addpage.html', context=context)
 
 
 def contact(request):
@@ -67,16 +80,29 @@ def login(request):
     return HttpResponse("Авторизация")
 
 
-def show_post(request, post_slug):
-    post = get_object_or_404(Women, slug=post_slug)
+# def show_post(request, post_slug):
+#     post = get_object_or_404(Women, slug=post_slug)
+#
+#     context = {
+#         'post': post,
+#         'title': post.title,
+#         'cat_selected': post.cat_id,
+#     }
+#
+#     return render(request, 'women/post.html', context=context)
 
-    context = {
-        'post': post,
-        'title': post.title,
-        'cat_selected': post.cat_id,
-    }
 
-    return render(request, 'women/post.html', context=context)
+class ShowPost(DetailView):
+    model = Women
+    template_name = 'women/post.html'
+    slug_url_kwarg = 'post_slug'
+    context_object_name = 'post'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = context['post']
+        context['menu'] = menu
+        return context
 
 
 def pageNotFound(request, exception):
