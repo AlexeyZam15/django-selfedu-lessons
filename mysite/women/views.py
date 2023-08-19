@@ -15,12 +15,16 @@ class WomenHome(ListView):
     model = Women
     template_name = 'women/index.html'
     context_object_name = 'posts'
-    extra_context = {'title': 'Главная страница'}
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
         context['menu'] = menu
+        context['title'] = 'Главная страница'
+        context['cat_selected'] = 0
         return context
+
+    def get_queryset(self):
+        return Women.objects.filter(is_published=True)
 
 
 # def index(request):
@@ -79,17 +83,33 @@ def pageNotFound(request, exception):
     return HttpResponseNotFound('<h1>Страница не найдена</h1>')
 
 
-def show_category(request, cat_slug):
-    category = get_object_or_404(Category, slug=cat_slug)
+class WomenCategory(ListView):
+    model = Women
+    template_name = 'women/index.html'
+    context_object_name = 'posts'
+    allow_empty = False
 
-    posts = Women.objects.filter(cat_id=category.pk)
+    def get_queryset(self):
+        return Women.objects.filter(cat__slug=self.kwargs['cat_slug'], is_published=True)
 
-    if not posts:
-        raise Http404()
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Категория - {context["posts"][0].cat}'
+        context['menu'] = menu
+        context['cat_selected'] = context['posts'][0].cat_id
+        return context
 
-    context = {
-        'posts': posts,
-        'title': 'Отображение по рубрикам',
-        'cat_selected': category.pk
-    }
-    return render(request, 'women/index.html', context=context)
+# def show_category(request, cat_slug):
+#     category = get_object_or_404(Category, slug=cat_slug)
+#
+#     posts = Women.objects.filter(cat_id=category.pk)
+#
+#     if not posts:
+#         raise Http404()
+#
+#     context = {
+#         'posts': posts,
+#         'title': 'Отображение по рубрикам',
+#         'cat_selected': category.pk
+#     }
+#     return render(request, 'women/index.html', context=context)
