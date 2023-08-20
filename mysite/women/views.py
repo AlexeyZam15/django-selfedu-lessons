@@ -18,7 +18,6 @@ menu = [{'title': "О сайте", 'url_name': 'about'},
 
 
 class WomenHome(DataMixin, ListView):
-    paginate_by = 3
     model = Women
     template_name = 'women/index.html'
     context_object_name = 'posts'
@@ -29,7 +28,7 @@ class WomenHome(DataMixin, ListView):
         return dict(list(context.items()) + list(c_def.items()))
 
     def get_queryset(self):
-        return Women.objects.filter(is_published=True).order_by('-time_update')
+        return Women.objects.filter(is_published=True)
 
 
 # def index(request):
